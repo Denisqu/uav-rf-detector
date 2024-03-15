@@ -22,3 +22,5 @@ master/.clang-format
 *CMakeLists.txt.user*
 /master/.clang-format
 *.clang-format
+*build*
+*BUILD*
