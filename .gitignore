@@ -1,0 +1,24 @@
+
+build*/
+master/bin*
+master/build*
+master/*_certification*
+master/lib*
+tools/bin/
+tools/lib/*
+tools/?build*
+*.user
+*.pyc
+/master/.editorconfig
+/master/.vscode/*
+/master/deploy/*
+*tmp
+/_build_master/
+/.vscode/
+master/.clang-format
+
+# DENIS's GITGNORE
+.idea/
+*CMakeLists.txt.user*
+/master/.clang-format
+*.clang-format
