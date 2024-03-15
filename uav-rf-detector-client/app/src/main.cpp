@@ -12,23 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include "helloworld.grpc.pb.h"
 
 #include <agrpc/asio_grpc.hpp>
 #include <boost/asio/co_spawn.hpp>
 #include <boost/asio/detached.hpp>
-#include <boost/asio/signal_set.hpp>
-#include <grpcpp/server.h>
-#include <grpcpp/server_builder.h>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
 
-#include <agrpc/server_rpc.hpp>
+#include <agrpc/client_rpc.hpp>
 #include <boost/asio/use_awaitable.hpp>
 
 namespace example
 {
-template <auto RequestRPC>
-using AwaitableServerRPC = boost::asio::use_awaitable_t<>::as_default_on_t<agrpc::ServerRPC<RequestRPC>>;
+template <auto PrepareAsync>
+using AwaitableClientRPC = boost::asio::use_awaitable_t<>::as_default_on_t<agrpc::ClientRPC<PrepareAsync>>;
 }
 
 #include <exception>
@@ -55,40 +53,33 @@ struct RethrowFirstArg
 };
 }  // namespace example
 
-///////////////////
-
 namespace asio = boost::asio;
 
-// begin-snippet: server-side-helloworld
-// ---------------------------------------------------
-// Server-side hello world which handles exactly one request from the client before shutting down.
-// ---------------------------------------------------
-// end-snippet
 int main(int argc, const char** argv)
 {
     const auto port = argc >= 2 ? argv[1] : "50051";
-    const auto host = std::string("0.0.0.0:") + port;
+    const auto host = std::string("localhost:") + port;
 
-    helloworld::Greeter::AsyncService service;
-    std::unique_ptr<grpc::Server> server;
+    grpc::Status status;
 
-    grpc::ServerBuilder builder;
-    agrpc::GrpcContext grpc_context{builder.AddCompletionQueue()};
-    builder.AddListeningPort(host, grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
-    server = builder.BuildAndStart();
+    helloworld::Greeter::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
+    agrpc::GrpcContext grpc_context;
 
-    using RPC = example::AwaitableServerRPC<&helloworld::Greeter::AsyncService::RequestSayHello>;
-    agrpc::register_awaitable_rpc_handler<RPC>(
-        grpc_context, service,
-        [&](RPC& rpc, RPC::Request& request) -> asio::awaitable<void>
+    asio::co_spawn(
+        grpc_context,
+        [&]() -> asio::awaitable<void>
         {
+            using RPC = example::AwaitableClientRPC<&helloworld::Greeter::Stub::PrepareAsyncSayHello>;
+            grpc::ClientContext client_context;
+            helloworld::HelloRequest request;
+            request.set_name("world");
             helloworld::HelloReply response;
-            response.set_message("Hello " + request.name());
-            co_await rpc.finish(response, grpc::Status::OK);
-            server->Shutdown();
+            status = co_await RPC::request(grpc_context, stub, client_context, request, response);
+            std::cout << status.ok() << " response: " << response.message() << std::endl;
         },
         example::RethrowFirstArg{});
 
     grpc_context.run();
+
+    //abort_if_not(status.ok());
 }
