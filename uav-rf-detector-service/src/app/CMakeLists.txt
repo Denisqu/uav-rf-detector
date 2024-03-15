@@ -1,0 +1,51 @@
+add_executable(${USER_PROJECT_NAME})
+
+find_package(Boost REQUIRED)
+find_package(absl CONFIG REQUIRED)
+find_package(protobuf CONFIG REQUIRED)
+find_package(gRPC CONFIG REQUIRED)
+
+set(HEADERS
+        # none
+)
+
+file(GLOB_RECURSE SOURCES
+        #${include_dir}/*.hpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+)
+
+file(GLOB_RECURSE protos_sources
+        ${PROJECT_SOURCE_DIR}/proto/*.hpp
+        ${PROJECT_SOURCE_DIR}/proto/*.cpp
+)
+
+file(GLOB_RECURSE protos
+        ${PROJECT_SOURCE_DIR}/files/proto/address.proto
+        ${PROJECT_SOURCE_DIR}/files/proto/addressbook.proto
+)
+
+target_sources(${USER_PROJECT_NAME}
+        PRIVATE
+        ${HEADERS}
+        ${SOURCES}
+        #${RESOURCES_RC}
+        ${protos_sources}
+        ${protos}
+)
+
+target_include_directories(${USER_PROJECT_NAME}
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_BINARY_DIR} # protobuf generated files
+        ${PROJECT_SOURCE_DIR}/src
+)
+
+target_link_libraries(${USER_PROJECT_NAME}
+        PRIVATE
+        Boost::boost
+        protobuf::libprotobuf
+        gRPC::grpc
+        gRPC::grpc++
+)
+
+protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
