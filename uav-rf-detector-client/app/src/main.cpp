@@ -65,7 +65,7 @@ int main(int argc, const char** argv)
     helloworld::Greeter::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
     agrpc::GrpcContext grpc_context;
 
-    asio::co_spawn(
+    asio::co_spawn (
         grpc_context,
         [&]() -> asio::awaitable<void>
         {

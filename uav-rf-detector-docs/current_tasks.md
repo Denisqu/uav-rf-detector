@@ -1,5 +1,5 @@
 # Service
-- [ ] Разобраться как работает hello-world-asio-grpc-server
+- [ ] Разобраться как работает https://github.com/Tradias/asio-grpc/blob/master/example/streaming-server.cpp
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master 
 - [x] asio-grpc server + client hello world
@@ -9,7 +9,6 @@
 - [x] Add boost to CMake.
 
 # Client
-- [ ] Разобраться как работает hello-world-asio-grpc-client
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master
 - [x] asio-grpc server + client hello world 

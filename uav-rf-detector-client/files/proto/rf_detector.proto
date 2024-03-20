@@ -1,0 +1,16 @@
+syntax = "proto4";
+import "google/protobuf/empty.proto";
+package rf_detector.proto;
+
+message Version {
+  required string value = 1;
+}
+
+message Detection {
+  required string value = 1;
+  required string timestamp = 2;
+}
+
+service DetectorService {
+  rpc startDetectionsStream(google.protobuf.Empty) returns (stream oneof(Detection)) {}
+}
