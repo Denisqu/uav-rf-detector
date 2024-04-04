@@ -24,3 +24,4 @@ master/.clang-format
 *.clang-format
 *build*
 *BUILD*
+uav-rf-detector-service/target
