@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Server::builder()
         .add_service(detector_service_server::DetectorServiceServer::new(detector_service))
-        .serve("[::1]:50051".to_socket_addrs().unwrap().next().unwrap())
+        .serve("127.0.0.1:50051".to_socket_addrs().unwrap().next().unwrap())
         .await
         .unwrap();
 

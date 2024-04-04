@@ -4,11 +4,14 @@ package rf_detector.proto;
 
 message Version { string value = 1; }
 
+message Ping { uint32 value = 1; }
+
 message Detection {
   string value = 1;
   string timestamp = 2;
 }
 
 service DetectorService {
-  rpc startDetectionsStream(google.protobuf.Empty) returns (stream Detection) {}
+  rpc GetDetectionsStream(google.protobuf.Empty) returns (stream Detection) {}
+  rpc GetPing(Ping) returns (Ping) {}
 }
