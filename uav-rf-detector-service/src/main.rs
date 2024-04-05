@@ -13,6 +13,7 @@ mod service;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(debug_assertions)]
     tonic_build::compile_protos("../uav-rf-detector-client/files/proto/rf_detector.proto")?;
 
     // ML-executor thread
