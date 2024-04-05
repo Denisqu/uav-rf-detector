@@ -12,7 +12,6 @@ pub struct DetectorService {
 
 impl DetectorService {
     pub fn new() -> DetectorService {
-        //let (tx, rx) = mpsc::channel(1024);
         let (tx, mut rx) = broadcast(1);
         rx.set_overflow(true);
         DetectorService {

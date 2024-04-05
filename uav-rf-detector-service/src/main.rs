@@ -10,7 +10,6 @@ use crate::proto::Detection;
 mod proto;
 mod service;
 
-// TODO: https://github.com/hyperium/tonic/blob/master/examples/routeguide-tutorial.md
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
