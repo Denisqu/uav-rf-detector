@@ -1,17 +1,3 @@
-// Copyright 2023 Dennis Hezel
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 #include "helloworld.grpc.pb.h"
 
 #include <agrpc/asio_grpc.hpp>
@@ -22,6 +8,10 @@
 
 #include <agrpc/client_rpc.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/optional.hpp>
+
+#include <QApplication>
+#include <QQmlApplicationEngine>
 
 namespace example
 {
@@ -53,10 +43,7 @@ struct RethrowFirstArg
 };
 }  // namespace example
 
-namespace asio = boost::asio;
-
-int main(int argc, const char** argv)
-{
+int old_main(int argc, const char** argv) {
     const auto port = argc >= 2 ? argv[1] : "50051";
     const auto host = std::string("localhost:") + port;
 
@@ -65,9 +52,10 @@ int main(int argc, const char** argv)
     helloworld::Greeter::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
     agrpc::GrpcContext grpc_context;
 
-    asio::co_spawn (
+
+    boost::asio::co_spawn (
         grpc_context,
-        [&]() -> asio::awaitable<void>
+        [&]() -> boost::asio::awaitable<void>
         {
             using RPC = example::AwaitableClientRPC<&helloworld::Greeter::Stub::PrepareAsyncSayHello>;
             grpc::ClientContext client_context;
@@ -82,4 +70,15 @@ int main(int argc, const char** argv)
     grpc_context.run();
 
     //abort_if_not(status.ok());
+    return 0;
+}
+
+#include <iostream>
+int main(int argc, char** argv)
+{
+    const auto test = boost::make_optional(12);
+    std::cout << "test = " << *test;
+    QGuiApplication app(argc, argv);
+    QQmlApplicationEngine appEngine(QUrl("qrc:/main.qml"));
+    return app.exec();
 }
