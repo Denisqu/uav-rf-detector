@@ -1,7 +1,10 @@
 # Service
-- [x] Переписать на расте
+- [ ] Добавить сборку с помощью Conan, CMakeConan
+- [ ] Добавить поддержку Gitlab CI (build, test, pack)
 
 # Client
+- [ ] Добавить сборку с помощью Conan, CMakeConan
+- [ ] Добавить поддержку Gitlab CI (build, test, pack)
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master
 - [x] asio-grpc server + client hello world 
