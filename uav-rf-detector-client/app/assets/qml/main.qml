@@ -5,7 +5,7 @@ import QtQuick.Layouts
 
 ApplicationWindow {
     visible: true
-
+    id: window
     width: 1600
     height: 900
     minimumWidth: 1280
@@ -16,8 +16,11 @@ ApplicationWindow {
 
     ColumnLayout {
         anchors.fill: parent
+        id: l1
 
+        // TODO: нужно как-то растянуть r1 во весь экран
         RowLayout {
+            id: r1
             Layout.fillWidth: true
             Layout.fillHeight: true
 
@@ -27,9 +30,8 @@ ApplicationWindow {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Layout.minimumWidth: 50
-                    Layout.preferredWidth: 100
-                    Layout.maximumWidth: 300
+                    Layout.minimumWidth: window.width / 2
+                    Layout.maximumWidth: window.width / 2
                     Layout.maximumHeight: 75
                     color: 'black'
 
@@ -54,8 +56,6 @@ ApplicationWindow {
                     color: 'black'
                 }
             }
-
-            DebugRect {}
         }
 
         RowLayout {
