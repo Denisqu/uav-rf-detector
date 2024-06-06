@@ -15,8 +15,6 @@ find_package(asio-grpc REQUIRED)
 find_package(Qt6 6.2 COMPONENTS Quick Gui REQUIRED)
 qt_standard_project_setup(REQUIRES 6.5)
 
-#find_package(Qt5QmlImportScanner REQUIRED)
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -46,8 +44,6 @@ file(GLOB_RECURSE protos
 set(QRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc
 )
-
-#qt5_add_resources(RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc)
 
 qt_add_executable(${USER_PROJECT_NAME}
         ${HEADERS}
