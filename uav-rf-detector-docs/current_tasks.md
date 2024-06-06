@@ -1,10 +1,9 @@
 # Service
 - [ ] Добавить сборку с помощью Conan, CMakeConan
-- [ ] Добавить поддержку Gitlab CI (build, test, pack)
+- [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
 
 # Client
-- [ ] Добавить в проект https://github.com/lirios/fluid/blob/develop/CMakeLists.txt
-- [ ] Добавить поддержку Gitlab CI (build, test, pack)
+- [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [x] Добавить сборку с помощью Conan, CMakeConan
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master

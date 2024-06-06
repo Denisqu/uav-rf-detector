@@ -86,21 +86,9 @@ protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DI
 protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
         APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
 
-set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_BINARY_DIR})
-message("cur bin dir": ${CMAKE_CURRENT_BINARY_DIR})
-message("inst prefix": ${CMAKE_INSTALL_PREFIX})
-message("inst bindir": ${CMAKE_INSTALL_BINDIR})
-install(TARGETS ${USER_PROJECT_NAME}
-       #BUNDLE  DESTINATION .
-        #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        #DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
+install(TARGETS ${USER_PROJECT_NAME})
 qt_generate_deploy_qml_app_script(
         TARGET ${USER_PROJECT_NAME}
         OUTPUT_SCRIPT deploy_script
 )
-install(SCRIPT ${deploy_script}
-        #BUNDLE  DESTINATION .
-        #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-        #DESTINATION ${CMAKE_INSTALL_PREFIX}
-)
+install(SCRIPT ${deploy_script})
