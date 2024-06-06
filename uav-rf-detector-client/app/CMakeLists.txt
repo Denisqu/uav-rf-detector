@@ -7,9 +7,9 @@ message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
 message(STATUS "Boost_VERSION: ${Boost_VERSION}")
 
-find_package(absl CONFIG REQUIRED)
-find_package(protobuf CONFIG REQUIRED)
-find_package(gRPC CONFIG REQUIRED)
+find_package(gRPC REQUIRED)
+find_package(absl REQUIRED)
+find_package(protobuf REQUIRED)
 find_package(asio-grpc REQUIRED)
 
 find_package(Qt6 6.2 COMPONENTS Quick Gui REQUIRED)
@@ -85,3 +85,22 @@ get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
         APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
+
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/${CMAKE_CURRENT_BINARY_DIR})
+message("cur bin dir": ${CMAKE_CURRENT_BINARY_DIR})
+message("inst prefix": ${CMAKE_INSTALL_PREFIX})
+message("inst bindir": ${CMAKE_INSTALL_BINDIR})
+install(TARGETS ${USER_PROJECT_NAME}
+       #BUNDLE  DESTINATION .
+        #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        #DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
+qt_generate_deploy_qml_app_script(
+        TARGET ${USER_PROJECT_NAME}
+        OUTPUT_SCRIPT deploy_script
+)
+install(SCRIPT ${deploy_script}
+        #BUNDLE  DESTINATION .
+        #RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        #DESTINATION ${CMAKE_INSTALL_PREFIX}
+)

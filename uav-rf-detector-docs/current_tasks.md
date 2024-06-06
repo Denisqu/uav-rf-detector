@@ -3,9 +3,10 @@
 - [ ] Добавить поддержку Gitlab CI (build, test, pack)
 
 # Client
-- [ ] Добавить сборку с помощью Conan, CMakeConan
+- [ ] Добавить в проект https://github.com/lirios/fluid/blob/develop/CMakeLists.txt
 - [ ] Добавить поддержку Gitlab CI (build, test, pack)
 - [ ] Add https://github.com/gabime/spdlog to CMake.
+- [x] Добавить сборку с помощью Conan, CMakeConan
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master
 - [x] asio-grpc server + client hello world 
 - [x] Add protobuf & grpc to CMake.
