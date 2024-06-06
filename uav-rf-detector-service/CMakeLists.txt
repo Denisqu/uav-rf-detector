@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-
+set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES "${CMAKE_SOURCE_DIR}/cmake/conan_provider.cmake")
 project(UAVDetectorService
         LANGUAGES CXX
 )

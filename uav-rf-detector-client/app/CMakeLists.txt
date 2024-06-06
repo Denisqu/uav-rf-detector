@@ -1,5 +1,3 @@
-add_executable(${USER_PROJECT_NAME})
-
 find_package(Boost 1.82.0 REQUIRED COMPONENTS)
 
 if(NOT Boost_FOUND)
@@ -14,17 +12,10 @@ find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(asio-grpc REQUIRED)
 
-find_package(Qt5 COMPONENTS Qml            REQUIRED)
-find_package(Qt5 COMPONENTS Core           REQUIRED)
-find_package(Qt5 COMPONENTS Quick          REQUIRED)
-find_package(Qt5 COMPONENTS Network        REQUIRED)
-find_package(Qt5 COMPONENTS Location       REQUIRED)
-find_package(Qt5 COMPONENTS WebSockets     REQUIRED)
-find_package(Qt5 COMPONENTS QuickControls2 REQUIRED)
-find_package(Qt5 COMPONENTS Multimedia     REQUIRED)
-find_package(Qt5 COMPONENTS Widgets        REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Quick Gui REQUIRED)
+qt_standard_project_setup(REQUIRES 6.5)
 
-find_package(Qt5QmlImportScanner REQUIRED)
+#find_package(Qt5QmlImportScanner REQUIRED)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -56,15 +47,19 @@ set(QRC_FILES
         ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc
 )
 
-qt5_add_resources(RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc)
+#qt5_add_resources(RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc)
 
-target_sources(${USER_PROJECT_NAME}
-        PRIVATE
+qt_add_executable(${USER_PROJECT_NAME}
         ${HEADERS}
         ${SOURCES}
-        ${RESOURCES}
         ${protos_sources}
         ${protos}
+)
+
+qt_add_qml_module(${USER_PROJECT_NAME}
+        URI app
+        QML_FILES
+            assets/qml/main.qml
 )
 
 target_include_directories(${USER_PROJECT_NAME}
@@ -85,16 +80,10 @@ target_link_libraries(${USER_PROJECT_NAME}
         gRPC::grpc++
         asio-grpc::asio-grpc
         Boost::headers
-        Qt5::Core
-        Qt5::Quick
-        Qt5::Location
-        Qt5::Qml
-        Qt5::QuickControls2
-        Qt5::Multimedia
-        Qt5::Widgets
+        Qt6::Gui Qt6::Quick
 )
 
-qt5_import_qml_plugins(${USER_PROJECT_NAME})
+qt_import_qml_plugins(${USER_PROJECT_NAME})
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)

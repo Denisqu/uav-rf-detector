@@ -10,7 +10,7 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/optional.hpp>
 
-#include <QApplication>
+#include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
 namespace example
@@ -79,6 +79,6 @@ int main(int argc, char** argv)
     const auto test = boost::make_optional(12);
     std::cout << "test = " << *test;
     QGuiApplication app(argc, argv);
-    QQmlApplicationEngine appEngine(QUrl("qrc:/main.qml"));
+    QQmlApplicationEngine appEngine(QUrl("qrc:/qt/qml/app/assets/qml/main.qml"));
     return app.exec();
 }
