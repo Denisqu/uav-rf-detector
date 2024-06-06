@@ -17,4 +17,5 @@ conan_cmake_run(CONANFILE conanfile.py
         SETTINGS build_type=${CMAKE_BUILD_TYPE})
 include(build/generators/conan_toolchain.cmake)
 unset(CMAKE_GENERATOR_PLATFORM CACHE) # переменная протекает, приходится чистить
+
 add_subdirectory(app)
