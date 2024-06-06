@@ -4,6 +4,8 @@
 
 # Client
 - [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
+- [ ] Добавить шейдерный эффект для запущенного поиска.
+- [ ] Добавить шейдерный эффект для активной цели.
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [x] Добавить сборку с помощью Conan, CMakeConan
 - [x] Add https://github.com/Tradias/asio-grpc/tree/master

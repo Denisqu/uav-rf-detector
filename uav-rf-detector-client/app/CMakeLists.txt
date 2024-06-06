@@ -56,6 +56,7 @@ qt_add_qml_module(${USER_PROJECT_NAME}
         URI app
         QML_FILES
             assets/qml/main.qml
+            QML_FILES assets/qml/DebugRect.qml
 )
 
 target_include_directories(${USER_PROJECT_NAME}
