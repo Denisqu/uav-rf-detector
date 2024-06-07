@@ -24,7 +24,11 @@ public:
 	bool startListening();
 
 private:
+	void registerServices(agrpc::GrpcContext& context, grpc::ServerBuilder& builder);
+
+private:
 	std::string m_port {};
+	std::unique_ptr<grpc::Server> m_server = nullptr;
 };
 
 }

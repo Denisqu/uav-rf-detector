@@ -18,28 +18,30 @@ bool AsyncGrpcServer::startListening()
 {
 	const auto host = std::string("0.0.0.0:") + m_port;
 
-	helloworld::Greeter::AsyncService service;
-	std::unique_ptr<grpc::Server> server;
-
 	grpc::ServerBuilder builder;
 	agrpc::GrpcContext grpc_context{builder.AddCompletionQueue()};
+	registerServices(grpc_context, builder);
+	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
+	m_server = builder.BuildAndStart();
+
+	return grpc_context.run();
+}
+
+void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::ServerBuilder& builder)
+{
+	static auto greeterService = helloworld::Greeter::AsyncService();
 	using RPC = AwaitableServerRPC<&helloworld::Greeter::AsyncService::RequestSayHello>;
 	agrpc::register_awaitable_rpc_handler<RPC>(
-		grpc_context, service,
-		[&](RPC &rpc, RPC::Request &request) -> boost::asio::awaitable<void>
+		context, greeterService,
+		[this](RPC &rpc, RPC::Request &request) -> boost::asio::awaitable<void>
 		{
 			helloworld::HelloReply response;
 			response.set_message("Hello " + request.name());
 			co_await rpc.finish(response, grpc::Status::OK);
-			server->Shutdown();
+			m_server->Shutdown();
 		},
 		server::RethrowFirstArg{});
-
-	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
-	builder.RegisterService(&service);
-	server = builder.BuildAndStart();
-
-	return grpc_context.run();
+	builder.RegisterService(&greeterService);
 }
 
 }
