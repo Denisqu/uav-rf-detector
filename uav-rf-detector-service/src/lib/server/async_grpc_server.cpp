@@ -16,14 +16,13 @@ AsyncGrpcServer::AsyncGrpcServer(std::string port)
 // end-snippet
 bool AsyncGrpcServer::startListening()
 {
-	const auto host = std::string("0.0.0.0:") + m_port;
-
-	grpc::ServerBuilder builder;
-	agrpc::GrpcContext grpc_context{builder.AddCompletionQueue()};
+	auto builder = grpc::ServerBuilder();
+	auto grpc_context = agrpc::GrpcContext(builder.AddCompletionQueue());
 	registerServices(grpc_context, builder);
+	const auto host = std::string("0.0.0.0:") + m_port;
 	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
+	
 	m_server = builder.BuildAndStart();
-
 	return grpc_context.run();
 }
 
