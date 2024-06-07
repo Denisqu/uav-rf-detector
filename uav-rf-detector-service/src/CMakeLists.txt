@@ -24,6 +24,7 @@ file(GLOB_RECURSE protos
         ${PROJECT_SOURCE_DIR}/files/proto/address.proto
         ${PROJECT_SOURCE_DIR}/files/proto/addressbook.proto
         ${PROJECT_SOURCE_DIR}/files/proto/helloworld.proto
+        ${PROJECT_SOURCE_DIR}/files/proto/rfdetector.proto
 )
 
 target_sources(${USER_PROJECT_NAME}

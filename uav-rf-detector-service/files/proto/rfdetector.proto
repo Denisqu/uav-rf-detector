@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package rfdetector;
+
+service DetectionService {
+  rpc MainStream(stream RequestStream) returns (stream ResponseStream);
+}
+
+message Detection {
+  uint64 carrier = 1;
+  uint64 timestamp = 2;
+  optional string protocol = 3;
+}
+
+message ResponseStream {
+  optional Detection detection = 1;
+}
+
+message RequestStream {
+  optional KeepAlive keepAlive = 1;
+}
+
+message KeepAlive {}

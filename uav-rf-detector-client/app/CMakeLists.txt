@@ -41,6 +41,7 @@ file(GLOB_RECURSE protos
         ${PROTO_DIR}/address.proto
         ${PROTO_DIR}/addressbook.proto
         ${PROTO_DIR}/helloworld.proto
+        ${PROTO_DIR}/rfdetector.proto
 )
 
 qt_add_executable(${USER_PROJECT_NAME}

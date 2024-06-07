@@ -1,4 +1,5 @@
 #include "helloworld.grpc.pb.h"
+#include "rfdetector.grpc.pb.h"
 
 #include <agrpc/asio_grpc.hpp>
 #include <boost/asio/co_spawn.hpp>
@@ -8,6 +9,7 @@
 
 #include <agrpc/client_rpc.hpp>
 #include <boost/asio/use_awaitable.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/optional.hpp>
 
 #include <QGuiApplication>
@@ -74,10 +76,61 @@ int old_main(int argc, const char** argv) {
     return 0;
 }
 
+int new_old_main(int argc, const char** argv) {
+	const auto port = argc >= 2 ? argv[1] : "50051";
+	const auto host = std::string("localhost:") + port;
+
+	grpc::Status status;
+
+	rfdetector::DetectionService::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
+	agrpc::GrpcContext grpc_context;
+
+	boost::asio::co_spawn (
+		grpc_context,
+		[&]() -> boost::asio::awaitable<void>
+		{
+			using RPC2 = example::AwaitableClientRPC<&rfdetector::DetectionService::Stub::PrepareAsyncMainStream>;
+			grpc::ClientContext client_context;
+			rfdetector::RequestStream request;
+			rfdetector::ResponseStream response;
+			auto reader_writer = RPC2 { grpc_context };
+
+			while (true)
+			{
+				// Example request with KeepAlive message
+				request.mutable_keepalive();
+				co_await reader_writer.write(request);
+
+				// Read the response
+				if (co_await reader_writer.read(response))
+				{
+					if (response.has_detection())
+					{
+						std::cout << "Detection received: carrier=" << response.detection().carrier()
+								  << ", timestamp=" << response.detection().timestamp()
+								  << ", protocol=" << response.detection().protocol() << std::endl;
+					}
+				}
+				else
+				{
+					break;
+				}
+				co_await boost::asio::steady_timer{grpc_context, std::chrono::seconds{1}}.async_wait(boost::asio::use_awaitable);
+			}
+
+			co_await reader_writer.finish();
+		},
+		example::RethrowFirstArg{});
+
+	grpc_context.run();
+
+	return 0;
+}
+
 #include <iostream>
 int main(int argc, const char **argv)
 {
-	old_main(argc, argv);
+	new_old_main(argc, argv);
 
     /*QGuiApplication app(argc, argv);
 
