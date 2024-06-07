@@ -75,9 +75,11 @@ int old_main(int argc, const char** argv) {
 }
 
 #include <iostream>
-int main(int argc, char** argv)
+int main(int argc, const char **argv)
 {
-    QGuiApplication app(argc, argv);
+	old_main(argc, argv);
+
+    /*QGuiApplication app(argc, argv);
 
 	// TODO: убрать использование шрифта из билд директории
     qint32 fontId = QFontDatabase::addApplicationFont("./Roboto-Regular.ttf");
@@ -87,5 +89,5 @@ int main(int argc, char** argv)
     QGuiApplication::setFont(QFont(family));
 
     QQmlApplicationEngine appEngine(QUrl("qrc:/qt/qml/app/assets/qml/main.qml"));
-    return app.exec();
+    return app.exec();*/
 }

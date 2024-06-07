@@ -4,6 +4,8 @@ import QtQuick.Controls.Material 2.12
 import QtQuick.Layouts
 import Qt.labs.qmlmodels
 
+import "components"
+
 ApplicationWindow {
     visible: true
     id: window

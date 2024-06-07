@@ -35,14 +35,12 @@ file(GLOB_RECURSE protos_sources
         ${PROJECT_SOURCE_DIR}/proto/*.cpp
 )
 
+cmake_path(GET PROJECT_SOURCE_DIR PARENT_PATH PARENT_DIR)
+set(PROTO_DIR ${PARENT_DIR}/uav-rf-detector-service/files/proto)
 file(GLOB_RECURSE protos
-        ${PROJECT_SOURCE_DIR}/files/proto/address.proto
-        ${PROJECT_SOURCE_DIR}/files/proto/addressbook.proto
-        ${PROJECT_SOURCE_DIR}/files/proto/helloworld.proto
-)
-
-set(QRC_FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/assets/qml.qrc
+        ${PROTO_DIR}/address.proto
+        ${PROTO_DIR}/addressbook.proto
+        ${PROTO_DIR}/helloworld.proto
 )
 
 qt_add_executable(${USER_PROJECT_NAME}
@@ -56,8 +54,8 @@ qt_add_qml_module(${USER_PROJECT_NAME}
         URI app
         QML_FILES
             assets/qml/main.qml
-            QML_FILES assets/qml/DebugRect.qml
-            QML_FILES assets/qml/ResizableColumnsTableView.qml
+            assets/qml/debug/DebugRect.qml
+            assets/qml/components/ResizableColumnsTableView.qml
 )
 
 target_include_directories(${USER_PROJECT_NAME}
@@ -83,10 +81,11 @@ target_link_libraries(${USER_PROJECT_NAME}
 
 qt_import_qml_plugins(${USER_PROJECT_NAME})
 
+
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
+protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
-        APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)
+        APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
 
 install(TARGETS ${USER_PROJECT_NAME})
 qt_generate_deploy_qml_app_script(
