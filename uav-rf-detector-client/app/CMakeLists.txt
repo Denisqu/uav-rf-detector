@@ -81,7 +81,6 @@ target_link_libraries(${USER_PROJECT_NAME}
 
 qt_import_qml_plugins(${USER_PROJECT_NAME})
 
-
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"

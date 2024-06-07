@@ -6,8 +6,8 @@ find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(asio-grpc REQUIRED)
 
-set(HEADERS
-        # none
+file(GLOB_RECURSE HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.h
 )
 
 file(GLOB_RECURSE SOURCES
@@ -30,7 +30,6 @@ target_sources(${USER_PROJECT_NAME}
         PRIVATE
         ${HEADERS}
         ${SOURCES}
-        #${RESOURCES_RC}
         ${protos_sources}
         ${protos}
 )
@@ -38,9 +37,13 @@ target_sources(${USER_PROJECT_NAME}
 target_include_directories(${USER_PROJECT_NAME}
         PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/lib
         ${CMAKE_CURRENT_BINARY_DIR} # protobuf generated files
         ${PROJECT_SOURCE_DIR}/src
 )
+
+include_directories(${Boost_INCLUDE_DIRS})
+add_definitions(-DBOOST_ASIO_HAS_CO_AWAIT)
 
 target_link_libraries(${USER_PROJECT_NAME}
         PRIVATE
