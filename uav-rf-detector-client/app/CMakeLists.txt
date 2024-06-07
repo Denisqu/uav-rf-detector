@@ -57,6 +57,7 @@ qt_add_qml_module(${USER_PROJECT_NAME}
         QML_FILES
             assets/qml/main.qml
             QML_FILES assets/qml/DebugRect.qml
+            QML_FILES assets/qml/ResizableColumnsTableView.qml
 )
 
 target_include_directories(${USER_PROJECT_NAME}

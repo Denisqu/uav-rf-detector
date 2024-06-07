@@ -12,6 +12,7 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
+#include <QFontDatabase>
 
 namespace example
 {
@@ -76,9 +77,15 @@ int old_main(int argc, const char** argv) {
 #include <iostream>
 int main(int argc, char** argv)
 {
-    const auto test = boost::make_optional(12);
-    std::cout << "test = " << *test;
     QGuiApplication app(argc, argv);
+
+	// TODO: убрать использование шрифта из билд директории
+    qint32 fontId = QFontDatabase::addApplicationFont("./Roboto-Regular.ttf");
+    QStringList fontList = QFontDatabase::applicationFontFamilies(fontId);
+
+    QString family = fontList.first();
+    QGuiApplication::setFont(QFont(family));
+
     QQmlApplicationEngine appEngine(QUrl("qrc:/qt/qml/app/assets/qml/main.qml"));
     return app.exec();
 }
