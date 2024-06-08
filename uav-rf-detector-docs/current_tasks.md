@@ -1,6 +1,8 @@
 # Service
+- [ ] Отрефакторить grpc-stream
+- [ ] Разобраться в том, за что отвечает каждая строчка в реализации 
 - [ ] Add https://github.com/gabime/spdlog to CMake.
-- [ ] Разобраться в том, за что отвечает каждая строчка в реализации begin-snippet: server-side-helloworld
+begin-snippet: server-side-helloworld
 - [ ] MVP реализация GRPC протокола:
     - [ ] Отправка обнаружений с частотой, протоколом, датой обнаружения в виде GRPC потока.
     - [ ] Heartbeat (клиент отправляет серверу оповощение о том, что он еще жив).
@@ -9,6 +11,7 @@
 - [x] Добавить сборку с помощью Conan, CMakeConan
 
 # Client
+- [ ] Отрефакторить grpc-stream
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [ ] MVP реализация GRPC протокола.
 - [ ] Добавить поддержку БД SQLite для журналирования событий. 

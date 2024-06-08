@@ -1,13 +1,73 @@
 #include "async_grpc_server.h"
 #include "lib/server/server_utils.h"
+
 #include "helloworld.grpc.pb.h"
 #include "rfdetector.grpc.pb.h"
+
+#include <boost/asio/experimental/channel.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+#include <boost/asio/as_tuple.hpp>
 
 namespace server
 {
 
+using Channel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
+using RPC2 = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
+
+// This function will read one requests from the client at a time. Note that gRPC only allows calling agrpc::read after
+// a previous read has completed.
+boost::asio::awaitable<void> reader(RPC2& rpc, Channel& channel)
+{
+	while (true)
+	{
+		rfdetector::RequestStream request;
+		if (!co_await rpc.read(request))
+		{
+			// Client is done writing.
+			break;
+		}
+		// Send request to writer. The `max_buffer_size` of the channel acts as backpressure.
+		(void)co_await channel.async_send(boost::system::error_code{}, std::move(request),
+										  boost::asio::as_tuple(boost::asio::use_awaitable));
+	}
+	// Signal the writer to complete.
+	channel.close();
+}
+
+// The writer will pick up reads from the reader through the channel and switch to the thread_pool to compute their
+// response.
+boost::asio::awaitable<bool> writer(RPC2& rpc, Channel& channel, boost::asio::thread_pool& thread_pool)
+{
+	bool ok{true};
+	while (ok)
+	{
+		const auto [ec, request] = co_await channel.async_receive(boost::asio::as_tuple(boost::asio::use_awaitable));
+		if (ec)
+		{
+			// Channel got closed by the reader.
+			break;
+		}
+		// In this example we switch to the thread_pool to compute the response.
+		co_await boost::asio::post(boost::asio::bind_executor(thread_pool, boost::asio::use_awaitable));
+
+		// Compute the response.
+		rfdetector::ResponseStream response;
+		auto detection = new rfdetector::Detection {};
+		detection->set_protocol("test");
+		detection->set_carrier(2400);
+		detection->set_timestamp(123456);
+		response.set_allocated_detection(detection);
+
+		// rpc.write() is thread-safe so we can interact with it from the thread_pool.
+		ok = co_await rpc.write(response);
+		// Now we are back on the main thread.
+	}
+	co_return ok;
+}
+
 AsyncGrpcServer::AsyncGrpcServer(std::string port)
 	: m_port(std::move(port))
+	, m_threadPool(std::make_unique<boost::asio::thread_pool>(1))
 {}
 
 // begin-snippet: server-side-helloworld
@@ -29,47 +89,31 @@ bool AsyncGrpcServer::startListening()
 
 void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::ServerBuilder& builder)
 {
-	// TODO: убрать после того как минимально настрою rfdetector::DetectionService
-	static auto greeterService = helloworld::Greeter::AsyncService();
-	using RPC = AwaitableServerRPC<&helloworld::Greeter::AsyncService::RequestSayHello>;
-	agrpc::register_awaitable_rpc_handler<RPC>(
-		context, greeterService,
-		[this](RPC &rpc, RPC::Request &request) -> boost::asio::awaitable<void>
-		{
-			helloworld::HelloReply response;
-			response.set_message("Hello " + request.name());
-			co_await rpc.finish(response, grpc::Status::OK);
-			m_server->Shutdown();
-		},
-		server::RethrowFirstArg{});
-	builder.RegisterService(&greeterService);
-
 	static auto detectionService = rfdetector::DetectionService::AsyncService();
-	using RPC2 = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
+
 	agrpc::register_awaitable_rpc_handler<RPC2>(
 		context, detectionService,
-		[this](RPC2 &rpc, RPC2::Request &request) -> boost::asio::awaitable<void>
+		[this](RPC2 &rpc) -> boost::asio::awaitable<void>
 		{
-			rfdetector::ResponseStream response;
-			if (request.has_keepalive()) {
-				rfdetector::Detection detection;
-				// Populate the detection message as needed
-				response.set_allocated_detection(&detection);
+			// Maximum number of requests that are buffered by the channel to enable backpressure.
+			static constexpr auto MAX_BUFFER_SIZE = 2;
+
+			Channel channel{co_await boost::asio::this_coro::executor, MAX_BUFFER_SIZE};
+
+			using namespace boost::asio::experimental::awaitable_operators;
+			const auto ok = co_await (reader(rpc, channel) && writer(rpc, channel, *m_threadPool));
+
+			if (!ok)
+			{
+				// Client has disconnected or server is shutting down.
+				co_return;
 			}
-			co_await rpc.write(response);
-			// Continue reading the next request
-			while (co_await rpc.read(request)) {
-				if (request.has_keepalive()) {
-					rfdetector::Detection detection;
-					// Populate the detection message as needed
-					response.set_allocated_detection(&detection);
-				}
-				co_await rpc.write(response);
-			}
+
 			co_await rpc.finish(grpc::Status::OK);
 		},
 		server::RethrowFirstArg{});
 	builder.RegisterService(&detectionService);
+
 }
 
 }

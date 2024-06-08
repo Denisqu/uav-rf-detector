@@ -7,6 +7,17 @@
 #include <grpcpp/client_context.h>
 #include <grpcpp/create_channel.h>
 
+#include <agrpc/alarm.hpp>
+#include <agrpc/client_rpc.hpp>
+#include <boost/asio/bind_executor.hpp>
+#include <boost/asio/co_spawn.hpp>
+#include <boost/asio/deferred.hpp>
+#include <boost/asio/detached.hpp>
+#include <boost/asio/experimental/awaitable_operators.hpp>
+#include <boost/asio/experimental/parallel_group.hpp>
+#include <grpcpp/client_context.h>
+#include <grpcpp/create_channel.h>
+
 #include <agrpc/client_rpc.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -46,85 +57,70 @@ struct RethrowFirstArg
 };
 }  // namespace example
 
-int old_main(int argc, const char** argv) {
-    const auto port = argc >= 2 ? argv[1] : "50051";
-    const auto host = std::string("localhost:") + port;
+// begin-snippet: client-rpc-bidirectional-streaming
+// ---------------------------------------------------
+// A bidirectional-streaming request that simply sends the response from the server back to it.
+// ---------------------------------------------------
+// end-snippet
+boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcContext& grpc_context, rfdetector::DetectionService::Stub& stub)
+{
+	using RPC2 = example::AwaitableClientRPC<&rfdetector::DetectionService::Stub::PrepareAsyncMainStream>;
 
-    grpc::Status status;
+	RPC2 rpc {grpc_context};
+	rpc.context().set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
 
-    helloworld::Greeter::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
-    agrpc::GrpcContext grpc_context;
+	if (!co_await rpc.start(stub))
+	{
+		// Channel is either permanently broken or transiently broken but with the fail-fast option.
+		co_return;
+	}
 
+	// Perform a request/response ping-pong.
+	rfdetector::RequestStream request;
+	// TODO: убрать аллокацию
+	auto keepAlive = new rfdetector::KeepAlive();
+	request.mutable_keepalive()->CopyFrom(*keepAlive);
+	rfdetector::ResponseStream response;
 
-    boost::asio::co_spawn (
-        grpc_context,
-        [&]() -> boost::asio::awaitable<void>
-        {
-            using RPC = example::AwaitableClientRPC<&helloworld::Greeter::Stub::PrepareAsyncSayHello>;
-            grpc::ClientContext client_context;
-            helloworld::HelloRequest request;
-            request.set_name("world");
-            helloworld::HelloReply response;
-            status = co_await RPC::request(grpc_context, stub, client_context, request, response);
-            std::cout << status.ok() << " response: " << response.message() << std::endl;
-        },
-        example::RethrowFirstArg{});
+	// Reads and writes can be performed simultaneously.
+	using namespace boost::asio::experimental::awaitable_operators;
+	auto [read_ok, write_ok] = co_await (rpc.read(response) && rpc.write(request));
 
-    grpc_context.run();
+	int count{};
+	while (read_ok && write_ok && count < 10)
+	{
+		std::cout << "has detection: " << response.has_detection()
+				  << "detection:"      << response.detection().DebugString();
+		++count;
+		std::tie(read_ok, write_ok) = co_await (rpc.read(response) && rpc.write(request));
+	}
 
-    //abort_if_not(status.ok());
-    return 0;
+	// Finish will automatically signal that the client is done writing. Optionally call rpc.writes_done() to explicitly
+	// signal it earlier.
+	const grpc::Status status = co_await rpc.finish();
+
+	if (!status.ok()) {
+		abort();
+	}
 }
 
 int new_old_main(int argc, const char** argv) {
 	const auto port = argc >= 2 ? argv[1] : "50051";
 	const auto host = std::string("localhost:") + port;
 
-	grpc::Status status;
-
-	rfdetector::DetectionService::Stub stub{grpc::CreateChannel(host, grpc::InsecureChannelCredentials())};
+	const auto channel = grpc::CreateChannel(host, grpc::InsecureChannelCredentials());
+	auto stub = rfdetector::DetectionService::Stub { channel };
 	agrpc::GrpcContext grpc_context;
 
-	boost::asio::co_spawn (
+	boost::asio::co_spawn(
 		grpc_context,
 		[&]() -> boost::asio::awaitable<void>
 		{
-			using RPC2 = example::AwaitableClientRPC<&rfdetector::DetectionService::Stub::PrepareAsyncMainStream>;
-			grpc::ClientContext client_context;
-			rfdetector::RequestStream request;
-			rfdetector::ResponseStream response;
-			auto reader_writer = RPC2 { grpc_context };
-
-			while (true)
-			{
-				// Example request with KeepAlive message
-				request.mutable_keepalive();
-				co_await reader_writer.write(request);
-
-				// Read the response
-				if (co_await reader_writer.read(response))
-				{
-					if (response.has_detection())
-					{
-						std::cout << "Detection received: carrier=" << response.detection().carrier()
-								  << ", timestamp=" << response.detection().timestamp()
-								  << ", protocol=" << response.detection().protocol() << std::endl;
-					}
-				}
-				else
-				{
-					break;
-				}
-				co_await boost::asio::steady_timer{grpc_context, std::chrono::seconds{1}}.async_wait(boost::asio::use_awaitable);
-			}
-
-			co_await reader_writer.finish();
+			co_await make_bidirectional_streaming_request(grpc_context, stub);
 		},
 		example::RethrowFirstArg{});
 
-	grpc_context.run();
-
-	return 0;
+	return grpc_context.run();
 }
 
 #include <iostream>

@@ -10,6 +10,7 @@
 #include <agrpc/server_rpc.hpp>
 #include <boost/asio/use_awaitable.hpp>
 #include <agrpc/asio_grpc.hpp>
+#include <boost/asio/thread_pool.hpp>
 
 namespace server
 {
@@ -29,6 +30,7 @@ private:
 private:
 	std::string m_port {};
 	std::unique_ptr<grpc::Server> m_server = nullptr;
+	std::unique_ptr<boost::asio::thread_pool> m_threadPool = nullptr;
 };
 
 }
