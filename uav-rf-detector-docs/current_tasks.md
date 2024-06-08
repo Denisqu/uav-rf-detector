@@ -1,4 +1,6 @@
 # Service
+- [ ] Добавить KeepAlive Response.
+- [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [ ] Отрефакторить grpc-stream
 - [ ] Разобраться в том, за что отвечает каждая строчка в реализации 
 - [ ] Add https://github.com/gabime/spdlog to CMake.

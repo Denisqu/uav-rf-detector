@@ -52,6 +52,7 @@ boost::asio::awaitable<bool> writer(RPC2& rpc, Channel& channel, boost::asio::th
 
 		// Compute the response.
 		rfdetector::ResponseStream response;
+		// TODO: убрать аллокацию
 		auto detection = new rfdetector::Detection {};
 		detection->set_protocol("test");
 		detection->set_carrier(2400);
