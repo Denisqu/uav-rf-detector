@@ -1,9 +1,9 @@
 # Service
-- [ ] Добавить KeepAlive Response.
+- [ ] Add https://github.com/gabime/spdlog to CMake.
+- [ ] Добавить uuid metadata в клиента. Добавить KeepAlive Response.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [ ] Отрефакторить grpc-stream
 - [ ] Разобраться в том, за что отвечает каждая строчка в реализации 
-- [ ] Add https://github.com/gabime/spdlog to CMake.
 begin-snippet: server-side-helloworld
 - [ ] MVP реализация GRPC протокола:
     - [ ] Отправка обнаружений с частотой, протоколом, датой обнаружения в виде GRPC потока.
@@ -13,8 +13,8 @@ begin-snippet: server-side-helloworld
 - [x] Добавить сборку с помощью Conan, CMakeConan
 
 # Client
-- [ ] Отрефакторить grpc-stream
 - [ ] Add https://github.com/gabime/spdlog to CMake.
+- [ ] Отрефакторить grpc-stream
 - [ ] MVP реализация GRPC протокола.
 - [ ] Добавить поддержку БД SQLite для журналирования событий. 
 - [ ] Убрать использование шрифта из билд директории (закинуть в CMake при сборке).

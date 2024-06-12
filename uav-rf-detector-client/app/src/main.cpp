@@ -27,6 +27,15 @@
 #include <QQmlApplicationEngine>
 #include <QFontDatabase>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
+std::string generate_uuid() {
+	boost::uuids::uuid uuid = boost::uuids::random_generator()();
+	return to_string(uuid);
+}
+
 namespace example
 {
 template <auto PrepareAsync>
@@ -68,7 +77,8 @@ boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcCon
 
 	RPC2 rpc {grpc_context};
 	rpc.context().set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
-
+	std::string uuid = generate_uuid();
+	rpc.context().AddMetadata("uuid", uuid);
 	if (!co_await rpc.start(stub))
 	{
 		// Channel is either permanently broken or transiently broken but with the fail-fast option.
@@ -77,6 +87,7 @@ boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcCon
 
 	// Perform a request/response ping-pong.
 	rfdetector::RequestStream request;
+
 	// TODO: убрать аллокацию
 	auto keepAlive = new rfdetector::KeepAlive();
 	request.mutable_keepalive()->CopyFrom(*keepAlive);
@@ -128,7 +139,7 @@ int main(int argc, const char **argv)
 {
 	new_old_main(argc, argv);
 
-    /*QGuiApplication app(argc, argv);
+    QGuiApplication app(argc, const_cast<char**>(argv));
 
 	// TODO: убрать использование шрифта из билд директории
     qint32 fontId = QFontDatabase::addApplicationFont("./Roboto-Regular.ttf");
@@ -138,5 +149,5 @@ int main(int argc, const char **argv)
     QGuiApplication::setFont(QFont(family));
 
     QQmlApplicationEngine appEngine(QUrl("qrc:/qt/qml/app/assets/qml/main.qml"));
-    return app.exec();*/
+    return app.exec();
 }
