@@ -117,10 +117,12 @@ void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::Server
 				co_return;
 			}
 
-			std::cout << "rpc started, client UUID: " << rpc.context().client_metadata().find("uuid")->second; << std::cout;
+			std::cout << "rpc started, client UUID: "
+			          << rpc.context().client_metadata().find("uuid")->second
+			          << std::endl;
 
 			// Maximum number of requests that are buffered by the channel to enable backpressure.
-			static constexpr auto MAX_BUFFER_SIZE = 2;
+			static constexpr auto MAX_BUFFER_SIZE = 64;
 
 			Channel channel{co_await boost::asio::this_coro::executor, MAX_BUFFER_SIZE};
 
