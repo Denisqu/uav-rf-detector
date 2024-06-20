@@ -1,7 +1,20 @@
 # Service
+
 - [ ] Add https://github.com/gabime/spdlog to CMake.
-- [ ] Добавить uuid metadata в клиента. Добавить KeepAlive Response.
+- [ ] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive Response.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
+- [ ] Понять что это за код: 
+```cpp
+namespace service
+{
+
+template<auto RequestRPC>
+using AwaitableServerRPC = boost::asio::use_awaitable_t<>::as_default_on_t<agrpc::ServerRPC<RequestRPC>>;
+
+using DetectionServiceRPC = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
+
+}
+```
 - [ ] Отрефакторить grpc-stream
 - [ ] Разобраться в том, за что отвечает каждая строчка в реализации 
 begin-snippet: server-side-helloworld

@@ -57,10 +57,6 @@ target_link_libraries(${USER_PROJECT_NAME}
             asio-grpc::asio-grpc
             Boost::headers
 )
-#target_link_libraries(${USER_PROJECT_NAME}
-#        PUBLIC
-#            libcuckoo
-#)
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
 protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PROJECT_SOURCE_DIR}/files/proto)

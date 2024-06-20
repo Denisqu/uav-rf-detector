@@ -30,9 +30,19 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "dce436b9cd74d5c5",
+            "type": "leaf",
+            "state": {
+              "type": "release-notes",
+              "state": {
+                "currentVersion": "1.6.3"
+              }
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -160,7 +170,7 @@
       "obsidian-excalidraw-plugin:Create new drawing": false
     }
   },
-  "active": "06b8c9f82bb01621",
+  "active": "dce436b9cd74d5c5",
   "lastOpenFiles": [
     "Pasted image 20240606193409.png",
     "Excalidraw/mainscreen.excalidraw.md",

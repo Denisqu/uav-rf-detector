@@ -11,19 +11,19 @@
 #include <boost/asio/use_awaitable.hpp>
 #include <agrpc/asio_grpc.hpp>
 #include <boost/asio/thread_pool.hpp>
-
+#include <libcuckoo/cuckoohash_map.hh>
 
 namespace server
 {
 
-template <auto RequestRPC>
-using AwaitableServerRPC = boost::asio::use_awaitable_t<>::as_default_on_t<agrpc::ServerRPC<RequestRPC>>;
+
 
 class AsyncGrpcServer
 {
 public:
 	explicit AsyncGrpcServer(std::string port = "50051");
 	bool startListening();
+	boost::asio::thread_pool& getThreadPool();
 
 private:
 	void registerServices(agrpc::GrpcContext& context, grpc::ServerBuilder& builder);
@@ -32,6 +32,7 @@ private:
 	std::string m_port {};
 	std::unique_ptr<grpc::Server> m_server = nullptr;
 	std::unique_ptr<boost::asio::thread_pool> m_threadPool = nullptr;
+	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {};
 };
 
 }
