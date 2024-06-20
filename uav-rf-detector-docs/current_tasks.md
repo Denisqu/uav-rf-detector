@@ -3,6 +3,8 @@
 - [ ] Add https://github.com/gabime/spdlog to CMake.
 - [ ] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive Response.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
+- [ ] Add gtest to CMake.
+- [ ] Написать несколько юнит-тестов.
 - [ ] Понять что это за код: 
 ```cpp
 namespace service
