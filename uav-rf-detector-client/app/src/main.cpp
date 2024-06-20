@@ -76,7 +76,7 @@ boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcCon
 	using RPC2 = example::AwaitableClientRPC<&rfdetector::DetectionService::Stub::PrepareAsyncMainStream>;
 
 	RPC2 rpc {grpc_context};
-	rpc.context().set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(5));
+	rpc.context().set_deadline(std::chrono::system_clock::now() + std::chrono::seconds(10));
 	std::string uuid = generate_uuid();
 	rpc.context().AddMetadata("uuid", uuid);
 	if (!co_await rpc.start(stub))
@@ -106,13 +106,18 @@ boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcCon
 		std::tie(read_ok, write_ok) = co_await (rpc.read(response) && rpc.write(request));
 	}
 
+	boost::asio::steady_timer t(grpc_context, boost::asio::chrono::seconds(10));
+	t.wait();
+
 	// Finish will automatically signal that the client is done writing. Optionally call rpc.writes_done() to explicitly
 	// signal it earlier.
-	const grpc::Status status = co_await rpc.finish();
+	const auto status = co_await rpc.writes_done();
 
+	//const grpc::Status status = co_await rpc.finish();
+	/*
 	if (!status.ok()) {
 		abort();
-	}
+	}*/
 }
 
 int new_old_main(int argc, const char** argv) {

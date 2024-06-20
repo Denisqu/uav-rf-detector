@@ -19,13 +19,13 @@ AsyncGrpcServer::AsyncGrpcServer(std::string port)
 bool AsyncGrpcServer::startListening()
 {
 	auto builder = grpc::ServerBuilder();
-	auto grpc_context = agrpc::GrpcContext(builder.AddCompletionQueue());
-	registerServices(grpc_context, builder);
+	m_context = std::make_unique<agrpc::GrpcContext>(builder.AddCompletionQueue());
+	registerServices(*m_context, builder);
 	const auto host = std::string("0.0.0.0:") + m_port;
 	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
 
 	m_server = builder.BuildAndStart();
-	return grpc_context.run();
+	return m_context->run();
 }
 
 void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::ServerBuilder& builder)
@@ -42,6 +42,11 @@ void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::Server
 boost::asio::thread_pool& AsyncGrpcServer::getThreadPool()
 {
 	return *m_threadPool;
+}
+
+agrpc::GrpcContext& AsyncGrpcServer::getContext()
+{
+	return *m_context;
 }
 
 }

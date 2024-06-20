@@ -24,6 +24,8 @@ public:
 	explicit AsyncGrpcServer(std::string port = "50051");
 	bool startListening();
 	boost::asio::thread_pool& getThreadPool();
+	agrpc::GrpcContext &getContext();
+
 
 private:
 	void registerServices(agrpc::GrpcContext& context, grpc::ServerBuilder& builder);
@@ -32,6 +34,7 @@ private:
 	std::string m_port {};
 	std::unique_ptr<grpc::Server> m_server = nullptr;
 	std::unique_ptr<boost::asio::thread_pool> m_threadPool = nullptr;
+	std::unique_ptr<agrpc::GrpcContext> m_context = nullptr;
 	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {};
 };
 

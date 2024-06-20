@@ -14,7 +14,6 @@ namespace service
 
 template<typename Service>
 concept ServiceConcept = requires(Service service, Service::RPC& rpc, int k) {
-	{ service.onTimeout() } -> std::same_as<void>;
     { service.operator()(rpc) } -> std::same_as<boost::asio::awaitable<void>>;
 };
 
