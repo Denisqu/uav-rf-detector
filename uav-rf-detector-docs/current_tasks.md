@@ -46,3 +46,4 @@ begin-snippet: server-side-helloworld
 - [ ] Сделать FFT датасета CardRF по гайду: https://stackoverflow.com/questions/64176002/fast-fourier-transform-of-csv-data
 - [ ] Обучить модель по статье: "RF-Enabled Deep-Learning-Assisted Drone Detection and
 Identification: An End-to-End Approach"
+- [ ] Разобрать хорошую статью про ML + Signal proccessing: "https://ataspinar.com/2018/04/04/machine-learning-with-signal-processing-techniques/".
