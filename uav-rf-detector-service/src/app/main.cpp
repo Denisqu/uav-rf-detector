@@ -12,6 +12,6 @@ int main(int argc, const char** argv)
 {
 	log_info(log_cat, "Start of application");
 
-	//auto server = server::AsyncGrpcServer();
-	//return server.startListening();
+	auto server = server::AsyncGrpcServer();
+	return server.startListening();
 }

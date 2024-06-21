@@ -1,9 +1,16 @@
 #include "async_grpc_server.h"
 #include "lib/server/server_utils.h"
 #include "lib/service/detection_service.h"
+#include "lib/utils/logger.h"
 
 #include <boost/asio/as_tuple.hpp>
 #include <thread>
+
+namespace {
+
+LOG_CAT(log_cat, "server.async_grpc_server")
+
+}
 
 namespace server
 {
@@ -25,6 +32,7 @@ bool AsyncGrpcServer::startListening()
 	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
 
 	m_server = builder.BuildAndStart();
+	log_info(log_cat, "Starting server on {}", host);
 	return m_context->run();
 }
 
