@@ -1,5 +1,6 @@
 # Service
 
+- [ ] Если билд запущен в дебаг-режиме, то отображать source-function-line
 - [ ] Превратить логгер в async logger
 - [ ] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive Response.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
