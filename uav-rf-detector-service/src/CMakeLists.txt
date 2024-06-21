@@ -5,6 +5,8 @@ find_package(absl CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(asio-grpc REQUIRED)
+find_package(spdlog REQUIRED)
+
 
 file(GLOB_RECURSE HEADERS
         ${CMAKE_CURRENT_SOURCE_DIR}/*.h
@@ -56,6 +58,7 @@ target_link_libraries(${USER_PROJECT_NAME}
             gRPC::grpc++
             asio-grpc::asio-grpc
             Boost::headers
+            spdlog::spdlog
 )
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
