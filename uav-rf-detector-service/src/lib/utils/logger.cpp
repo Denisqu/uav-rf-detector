@@ -9,7 +9,7 @@ std::vector<spdlog::sink_ptr>& sinksVector() {
 		std::make_shared<spdlog::sinks::rotating_file_sink_mt>("log_filename", 1024 * 1024, 5, false),
 		std::make_shared<spdlog::sinks::stdout_color_sink_mt>()
 	};
-	
+
 	return sinks;
 }
 

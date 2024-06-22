@@ -1,16 +1,13 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_TRACE
-#define SPDLOG_DEBUG_ON
-#define SPDLOG_TRACE_ON
+#include "lib/utils/fmt_extensions.h"
 
 #include "spdlog/spdlog.h"
 #include "spdlog/sinks/rotating_file_sink.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
 #include "spdlog/async.h"
 #include "spdlog/sinks/basic_file_sink.h"
-
 
 #include <memory>
 #include <vector>

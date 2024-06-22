@@ -15,6 +15,7 @@ namespace service
 template<typename Service>
 concept ServiceConcept = requires(Service service, Service::RPC& rpc, int k) {
     { service.operator()(rpc) } -> std::same_as<boost::asio::awaitable<void>>;
+    { service.name()          } -> std::same_as<const std::string&>;
 };
 
 /*!

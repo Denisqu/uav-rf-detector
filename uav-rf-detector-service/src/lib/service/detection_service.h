@@ -26,6 +26,7 @@ public:
 	DetectionServiceHandler(server::AsyncGrpcServer& server);
 	void onTimeout();
 	boost::asio::awaitable<void> operator() (service::DetectionServiceHandler::RPC& rpc);
+	const std::string& name();
 
 private:
 	boost::asio::awaitable<bool> writer(service::DetectionServiceHandler::RPC& rpc, Channel& channel, boost::asio::thread_pool& thread_pool);
@@ -37,6 +38,8 @@ public:
 private:
 	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {};
 	server::AsyncGrpcServer& m_server;
+
+	std::string m_name = "DetectionService";
 };
 
 }

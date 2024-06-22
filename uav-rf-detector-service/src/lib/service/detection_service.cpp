@@ -1,5 +1,6 @@
 #include "detection_service.h"
 #include "lib/server/async_grpc_server.h"
+#include "lib/utils/logger.h"
 
 #include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/as_tuple.hpp>
@@ -9,10 +10,22 @@
 
 namespace {
 
-
+LOG_CAT(log_cat, "service.detection_service");
 
 
 }
+
+#include <string_view>
+
+std::ostream& operator<<(std::ostream& os, grpc::string_ref const& ref) {
+	return os << std::string_view(ref.cbegin(), ref.cend());
+}
+
+std::ostream& operator<<(std::ostream& os, grpc::string_ref const ref) {
+	return os << std::string_view(ref.cbegin(), ref.cend());
+}
+
+
 
 namespace service {
 
@@ -23,7 +36,7 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 {
 	if (!rpc.context().client_metadata().contains("uuid")) {
 		rpc.context().TryCancel();
-		std::cout << "client doesn't have UUID metadata, aborting connection" << std::endl;
+		log_info(log_cat, "client doesn't have UUID metadata, aborting connection");
 		co_return;
 	}
 
@@ -42,15 +55,13 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 
 			if (!this->hearbeatReceived) {
 				clientContext->TryCancel();
-				std::cout << "no heartbeat was received from client, aborting connection!" << std::endl;
+				log_info(log_cat, "no heartbeat was received from client, aborting connection!");
 			}
 		} catch (...) {};
 	});
 
-
-	std::cout << "rpc started, client UUID: "
-			  << rpc.context().client_metadata().find("uuid")->second
-			  << std::endl;
+	log_info(log_cat, "rpc started, client UUID: {}",
+			 rpc.context().client_metadata().find("uuid")->second);
 
 	// Maximum number of requests that are buffered by the channel to enable backpressure.
 	static constexpr auto MAX_BUFFER_SIZE = 64;
@@ -82,6 +93,9 @@ boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionS
 			// Client is done writing.
 			break;
 		}
+
+		log_info(log_cat, "Request received: {}", request.DebugString());
+
 		// Send request to writer. The `max_buffer_size` of the channel acts as backpressure.
 		(void)co_await channel.async_send(boost::system::error_code{}, std::move(request),
 										  boost::asio::as_tuple(boost::asio::use_awaitable));
@@ -112,7 +126,7 @@ boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionS
 
 		// TODO: проверять keepalive не во writer'е
 		if (request.has_keepalive()) {
-			std::cout << "keepalive received from client: " << rpc.context().peer();
+			log_info(log_cat, "keepalive received from client: {}", rpc.context().peer());
 			hearbeatReceived = true;
 		}
 
@@ -135,6 +149,11 @@ boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionS
 void DetectionServiceHandler::onTimeout()
 {
 	std::cout << "timeout happened!";
+}
+
+const std::string &DetectionServiceHandler::name()
+{
+	return m_name;
 }
 
 }

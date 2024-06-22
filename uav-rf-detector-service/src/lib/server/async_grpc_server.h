@@ -13,10 +13,10 @@
 #include <boost/asio/thread_pool.hpp>
 #include <libcuckoo/cuckoohash_map.hh>
 
+#include <lib/service/service_concept.h>
+
 namespace server
 {
-
-
 
 class AsyncGrpcServer
 {
@@ -28,7 +28,10 @@ public:
 
 
 private:
-	void registerServices(agrpc::GrpcContext& context, grpc::ServerBuilder& builder);
+	void registerServices(grpc::ServerBuilder& builder);
+
+	template<typename Service, service::ServiceConcept Handler, typename... HandlerArgs>
+	void registerService(grpc::ServerBuilder& builder, HandlerArgs... args);
 
 private:
 	std::string m_port {};

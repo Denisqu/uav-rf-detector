@@ -4,7 +4,9 @@
 #include "lib/utils/logger.h"
 
 #include <boost/asio/as_tuple.hpp>
+
 #include <thread>
+#include <functional>
 
 namespace {
 
@@ -27,7 +29,7 @@ bool AsyncGrpcServer::startListening()
 {
 	auto builder = grpc::ServerBuilder();
 	m_context = std::make_unique<agrpc::GrpcContext>(builder.AddCompletionQueue());
-	registerServices(*m_context, builder);
+	registerServices(builder);
 	const auto host = std::string("0.0.0.0:") + m_port;
 	builder.AddListeningPort(host, grpc::InsecureServerCredentials());
 
@@ -36,15 +38,23 @@ bool AsyncGrpcServer::startListening()
 	return m_context->run();
 }
 
-void AsyncGrpcServer::registerServices(agrpc::GrpcContext &context, grpc::ServerBuilder& builder)
+template<typename Service, service::ServiceConcept Handler, typename... HandlerArgs>
+void AsyncGrpcServer::registerService(grpc::ServerBuilder& builder, HandlerArgs... args)
 {
-	static auto detectionService = rfdetector::DetectionService::AsyncService();
-	static auto detectionServiceHandler = service::DetectionServiceHandler(*this);
+	static auto service = Service();
+	static auto handler = Handler(std::forward<HandlerArgs>(args)...);
 	agrpc::register_awaitable_rpc_handler<service::DetectionServiceHandler::RPC>(
-		context, detectionService,detectionServiceHandler,
-		server::RethrowFirstArg{});
-	builder.RegisterService(&detectionService);
+		*m_context, service, handler, server::RethrowFirstArg{}
+    );
+	builder.RegisterService(&service);
+	log_info(log_cat, "Registered service: {}", handler.name());
+}
 
+void AsyncGrpcServer::registerServices(grpc::ServerBuilder& builder)
+{
+	registerService<rfdetector::DetectionService::AsyncService, service::DetectionServiceHandler>(
+		builder, std::ref(*this)
+	);
 }
 
 boost::asio::thread_pool& AsyncGrpcServer::getThreadPool()
