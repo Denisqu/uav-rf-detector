@@ -7,6 +7,7 @@
 #include "libcuckoo/cuckoohash_map.hh"
 #include <boost/asio/experimental/channel.hpp>
 #include <boost/asio/thread_pool.hpp>
+#include <boost/asio/steady_timer.hpp>
 
 namespace server { class AsyncGrpcServer; }
 
@@ -24,7 +25,7 @@ private:
 
 public:
 	DetectionServiceHandler(server::AsyncGrpcServer& server);
-	void onTimeout();
+	void onKeepAliveTimeout(const boost::system::error_code& error, const std::string& clientUuid);
 	boost::asio::awaitable<void> operator() (service::DetectionServiceHandler::RPC& rpc);
 	const std::string& name();
 
@@ -36,7 +37,8 @@ public:
 	bool hearbeatReceived = false;
 
 private:
-	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {};
+	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {}; // возможно сюда нужно закинуть шаред_птр
+	libcuckoo::cuckoohash_map<std::string, std::shared_ptr<boost::asio::steady_timer>> m_keepAliveTimers {};
 	server::AsyncGrpcServer& m_server;
 
 	std::string m_name = "DetectionService";

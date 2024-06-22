@@ -1,4 +1,5 @@
 # Service
+- [ ] Логировать каждый разрыв соединения на сервере.
 - [ ] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive Response.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [ ] Add gtest to CMake.

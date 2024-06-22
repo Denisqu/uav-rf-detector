@@ -103,10 +103,14 @@ boost::asio::awaitable<void> make_bidirectional_streaming_request(agrpc::GrpcCon
 		std::cout << "has detection: " << response.has_detection()
 				  << "detection:"      << response.detection().DebugString();
 		++count;
+
+		boost::asio::steady_timer t(grpc_context, boost::asio::chrono::milliseconds (500));
+		t.wait();
+
 		std::tie(read_ok, write_ok) = co_await (rpc.read(response) && rpc.write(request));
 	}
 
-	boost::asio::steady_timer t(grpc_context, boost::asio::chrono::seconds(10));
+	boost::asio::steady_timer t(grpc_context, boost::asio::chrono::seconds(20));
 	t.wait();
 
 	// Finish will automatically signal that the client is done writing. Optionally call rpc.writes_done() to explicitly

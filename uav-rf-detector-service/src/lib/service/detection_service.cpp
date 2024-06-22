@@ -12,20 +12,11 @@ namespace {
 
 LOG_CAT(log_cat, "service.detection_service");
 
-
+constexpr auto KEEPALIVE_TIMEOUT_TIME() {
+	return std::chrono::milliseconds(600);
 }
 
-#include <string_view>
-
-std::ostream& operator<<(std::ostream& os, grpc::string_ref const& ref) {
-	return os << std::string_view(ref.cbegin(), ref.cend());
 }
-
-std::ostream& operator<<(std::ostream& os, grpc::string_ref const ref) {
-	return os << std::string_view(ref.cbegin(), ref.cend());
-}
-
-
 
 namespace service {
 
@@ -40,25 +31,18 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 		co_return;
 	}
 
-	const std::string clientUuid = rpc.context().client_metadata().find("uuid")->second.data();
-	m_clients.insert(clientUuid,
-					 &rpc.context());
+	const std::string clientUuid = std::string(rpc.context().client_metadata().find("uuid")->second.data(),
+											   rpc.context().client_metadata().find("uuid")->second.size());
+	m_clients.insert(clientUuid,&rpc.context());
 
-	boost::asio::steady_timer new_timer(m_server.getContext(),
-										std::chrono::steady_clock::now() + std::chrono::seconds(3));
-	new_timer.async_wait([this, clientUuid](const auto& error) {
-		if (error) {
-			return;
-		}
-		try {
-			auto* clientContext = m_clients.find(clientUuid);
 
-			if (!this->hearbeatReceived) {
-				clientContext->TryCancel();
-				log_info(log_cat, "no heartbeat was received from client, aborting connection!");
-			}
-		} catch (...) {};
+	auto keepAliveTimer = std::make_shared<boost::asio::steady_timer>(m_server.getContext(),
+													std::chrono::steady_clock::now() + KEEPALIVE_TIMEOUT_TIME());
+	keepAliveTimer->async_wait([this, clientUuid](const auto& error) {
+		onKeepAliveTimeout(error, clientUuid);
 	});
+	m_keepAliveTimers.insert(clientUuid, std::move(keepAliveTimer));
+
 
 	log_info(log_cat, "rpc started, client UUID: {}",
 			 rpc.context().client_metadata().find("uuid")->second);
@@ -75,9 +59,12 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 	if (!ok)
 	{
 		// Client has disconnected or server is shutting down.
+		log_info(log_cat, "client disconnetcted {}",
+				 rpc.context().client_metadata().find("uuid")->second);
 		co_return;
 	}
 
+	log_info(log_cat, "finish of service for client: {}", rpc.context().client_metadata().find("uuid")->second);
 	co_await rpc.finish(grpc::Status::OK);
 }
 
@@ -95,6 +82,17 @@ boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionS
 		}
 
 		log_info(log_cat, "Request received: {}", request.DebugString());
+
+		if (request.has_keepalive()) {
+			auto clientUuid = std::string(rpc.context().client_metadata().find("uuid")->second.data(),
+										  rpc.context().client_metadata().find("uuid")->second.size());
+			log_info(log_cat, "keepalive received from client: {} - {}", rpc.context().peer(), clientUuid);
+			auto pKeepAliveTimer = m_keepAliveTimers.find(clientUuid);
+			pKeepAliveTimer->expires_after(KEEPALIVE_TIMEOUT_TIME());
+			pKeepAliveTimer->async_wait([this, clientUuid](const auto& error) {
+				onKeepAliveTimeout(error, clientUuid);
+			});
+		}
 
 		// Send request to writer. The `max_buffer_size` of the channel acts as backpressure.
 		(void)co_await channel.async_send(boost::system::error_code{}, std::move(request),
@@ -124,11 +122,7 @@ boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionS
 		// Compute the response.
 		rfdetector::ResponseStream response;
 
-		// TODO: проверять keepalive не во writer'е
-		if (request.has_keepalive()) {
-			log_info(log_cat, "keepalive received from client: {}", rpc.context().peer());
-			hearbeatReceived = true;
-		}
+
 
 		// TODO: убрать аллокацию
 		/*
@@ -146,9 +140,16 @@ boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionS
 	co_return ok;
 }
 
-void DetectionServiceHandler::onTimeout()
+void DetectionServiceHandler::onKeepAliveTimeout(const boost::system::error_code& error, const std::string& clientUuid)
 {
-	std::cout << "timeout happened!";
+	if (error) {
+		return;
+	}
+	try {
+		auto* clientContext = m_clients.find(clientUuid);
+		log_info(log_cat, "no heartbeat was received from client, aborting connection!");
+		clientContext->TryCancel();
+	} catch (...) {};
 }
 
 const std::string &DetectionServiceHandler::name()
