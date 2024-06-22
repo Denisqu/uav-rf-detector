@@ -21,7 +21,8 @@ public:
 	using RPC = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
 
 private:
-	using Channel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
+	using RequestChannel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
+	using MasterChannel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
 
 public:
 	DetectionServiceHandler(server::AsyncGrpcServer& server);
@@ -30,14 +31,12 @@ public:
 	const std::string& name();
 
 private:
-	boost::asio::awaitable<bool> writer(service::DetectionServiceHandler::RPC& rpc, Channel& channel, boost::asio::thread_pool& thread_pool);
-	boost::asio::awaitable<void> reader(service::DetectionServiceHandler::RPC& rpc, Channel& channel);
-
-public:
-	bool hearbeatReceived = false;
+	boost::asio::awaitable<void> reader(service::DetectionServiceHandler::RPC& rpc, RequestChannel& channel);
+	boost::asio::awaitable<bool> slaveWriter(service::DetectionServiceHandler::RPC& rpc, RequestChannel& channel, boost::asio::thread_pool& thread_pool);
+	boost::asio::awaitable<bool> masterWriter(service::DetectionServiceHandler::RPC& rpc, MasterChannel& channel, boost::asio::thread_pool& thread_pool);
 
 private:
-	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {}; // возможно сюда нужно закинуть шаред_птр
+	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {}; // TODO: возможно сюда нужно закинуть шаред_птр
 	libcuckoo::cuckoohash_map<std::string, std::shared_ptr<boost::asio::steady_timer>> m_keepAliveTimers {};
 	server::AsyncGrpcServer& m_server;
 

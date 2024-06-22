@@ -1,6 +1,5 @@
 # Service
-- [ ] Логировать каждый разрыв соединения на сервере.
-- [ ] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive Response.
+- [ ] Реализовать masterWriter. Должен отправлять данные из потока "detector", перенаправляи все обнаружения/спектр клиентам gRPC.
 - [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [ ] Add gtest to CMake.
 - [ ] Написать несколько юнит-тестов.
@@ -24,6 +23,8 @@ begin-snippet: server-side-helloworld
     - [ ] Heartbeat (клиент отправляет серверу оповощение о том, что он еще жив).
 - [ ] Добавить поддержку async Postgres для БД обнаружений.
 - [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
+- [x] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive разрыв.
+- [x] Логировать каждый разрыв соединения на сервере.
 - [x] Превратить логгер в async logger
 - [x] Если билд запущен в дебаг-режиме, то отображать source-function-line: https://github.com/gabime/spdlog/issues/318#issuecomment-989708120
 - [x] Написать свой логгер с log_cat, как здесь: https://github.com/gabime/spdlog/issues/154 (api как у `Q_LOGGING_CATEGORY`)

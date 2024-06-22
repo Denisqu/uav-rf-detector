@@ -50,11 +50,10 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 	// Maximum number of requests that are buffered by the channel to enable backpressure.
 	static constexpr auto MAX_BUFFER_SIZE = 64;
 
-	Channel channel{co_await boost::asio::this_coro::executor, MAX_BUFFER_SIZE};
+	SlaveChannel channel{co_await boost::asio::this_coro::executor, MAX_BUFFER_SIZE};
 
 	using namespace boost::asio::experimental::awaitable_operators;
-
-	const auto ok = co_await (reader(rpc, channel) && writer(rpc, channel, m_server.getThreadPool()));
+	const auto ok = co_await (reader(rpc, channel) && slaveWriter(rpc, channel, m_server.getThreadPool()));
 
 	if (!ok)
 	{
@@ -70,7 +69,7 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 
 // This function will read one requests from the client at a time. Note that gRPC only allows calling agrpc::read after
 // a previous read has completed.
-boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionServiceHandler::RPC& rpc, Channel& channel)
+boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionServiceHandler::RPC& rpc, SlaveChannel& channel)
 {
 	while (true)
 	{
@@ -94,17 +93,17 @@ boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionS
 			});
 		}
 
-		// Send request to writer. The `max_buffer_size` of the channel acts as backpressure.
+		// Send request to slaveWriter. The `max_buffer_size` of the channel acts as backpressure.
 		(void)co_await channel.async_send(boost::system::error_code{}, std::move(request),
 										  boost::asio::as_tuple(boost::asio::use_awaitable));
 	}
-	// Signal the writer to complete.
+	// Signal the slaveWriter to complete.
 	channel.close();
 }
 
-// The writer will pick up reads from the reader through the channel and switch to the thread_pool to compute their
+// The slaveWriter will pick up reads from the reader through the channel and switch to the thread_pool to compute their
 // response.
-boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionServiceHandler::RPC& rpc, Channel& channel, boost::asio::thread_pool& thread_pool)
+boost::asio::awaitable<bool> DetectionServiceHandler::slaveWriter(service::DetectionServiceHandler::RPC& rpc, SlaveChannel& channel, boost::asio::thread_pool& thread_pool)
 {
 	bool ok{true};
 	while (ok)
@@ -113,7 +112,7 @@ boost::asio::awaitable<bool> DetectionServiceHandler::writer(service::DetectionS
 			boost::asio::as_tuple(boost::asio::use_awaitable));
 		if (ec)
 		{
-			// Channel got closed by the reader.
+			// SlaveChannel got closed by the reader.
 			break;
 		}
 		// switch context to the thread_pool to compute the response.
