@@ -1,6 +1,5 @@
-#include "lib/server/async_grpc_server.h"
-
 #include "lib/utils/logger.h"
+#include "lib/general/app_mediator.h"
 
 namespace {
 
@@ -12,6 +11,8 @@ int main(int argc, const char** argv)
 {
 	log_info(log_cat, "Start of application");
 
-	auto server = server::AsyncGrpcServer();
-	return server.startListening();
+	auto app = std::make_unique<AppMediator>();
+	app->startApplication();
+
+
 }

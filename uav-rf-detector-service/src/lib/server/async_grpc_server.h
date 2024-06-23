@@ -15,13 +15,15 @@
 
 #include <lib/service/service_concept.h>
 
+class AppMediator;
+
 namespace server
 {
 
 class AsyncGrpcServer
 {
 public:
-	explicit AsyncGrpcServer(std::string port = "50051");
+	explicit AsyncGrpcServer(AppMediator& app, std::string port = "50051");
 	bool startListening();
 	boost::asio::thread_pool& getThreadPool();
 	agrpc::GrpcContext &getContext();
@@ -32,6 +34,9 @@ private:
 
 	template<typename Service, service::ServiceConcept Handler, typename... HandlerArgs>
 	void registerService(grpc::ServerBuilder& builder, HandlerArgs... args);
+
+public:
+	AppMediator& app;
 
 private:
 	std::string m_port {};

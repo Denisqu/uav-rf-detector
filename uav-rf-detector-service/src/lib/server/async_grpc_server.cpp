@@ -7,6 +7,7 @@
 
 #include <thread>
 #include <functional>
+#include "lib/general/app_mediator.h"
 
 namespace {
 
@@ -17,8 +18,9 @@ LOG_CAT(log_cat, "server.async_grpc_server")
 namespace server
 {
 
-AsyncGrpcServer::AsyncGrpcServer(std::string port)
+AsyncGrpcServer::AsyncGrpcServer(AppMediator& app, std::string port)
 	: m_port(std::move(port))
+	, app(app)
 	, m_threadPool(std::make_unique<boost::asio::thread_pool>(
 		std::thread::hardware_concurrency() == 0 ? 2 : std::thread::hardware_concurrency())
 	)
