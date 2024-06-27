@@ -14,7 +14,7 @@ namespace detector {
 class IDetector {
 
 public:
-	virtual ~IDetector() = 0;
+	virtual ~IDetector() = default;
 	virtual bool start() = 0;
 
 public:

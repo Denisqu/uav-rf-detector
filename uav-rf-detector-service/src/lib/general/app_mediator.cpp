@@ -19,7 +19,7 @@ void AppMediator::startApplication()
 	bool ok =  server.startListening();
 }
 
-const std::vector<std::shared_ptr<detector::IDetector>>& AppMediator::getDetectors()
+std::vector<std::shared_ptr<detector::IDetector>>& AppMediator::getDetectors()
 {
 	return m_detectors;
 }

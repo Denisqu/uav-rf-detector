@@ -1,10 +1,13 @@
 #include "detection_service.h"
 #include "lib/server/async_grpc_server.h"
 #include "lib/utils/logger.h"
+#include "lib/general/app_mediator.h"
+#include "lib/detector/i_detector.h"
 
 #include <boost/asio/experimental/awaitable_operators.hpp>
 #include <boost/asio/as_tuple.hpp>
 #include <boost/asio.hpp>
+#include <boost/bind/bind.hpp>
 
 #include <iostream>
 
@@ -21,7 +24,12 @@ constexpr auto KEEPALIVE_TIMEOUT_TIME() {
 namespace service {
 
 DetectionServiceHandler::DetectionServiceHandler(server::AsyncGrpcServer& server)
-	: m_server(server) { }
+	: m_server(server)
+{
+	for (auto& detector :m_server.app.getDetectors()) {
+		detector->detectionFound.connect([this](const auto detection) { onDetectionFound(detection); } );
+	}
+}
 
 boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServiceHandler::RPC &rpc)
 {
@@ -33,7 +41,7 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 
 	const std::string clientUuid = std::string(rpc.context().client_metadata().find("uuid")->second.data(),
 											   rpc.context().client_metadata().find("uuid")->second.size());
-	m_clients.insert(clientUuid,&rpc.context());
+	m_clients.insert(clientUuid,std::make_shared<RPC>(rpc));
 
 
 	auto keepAliveTimer = std::make_shared<boost::asio::steady_timer>(m_server.getContext(),
@@ -53,7 +61,10 @@ boost::asio::awaitable<void> DetectionServiceHandler::operator()(DetectionServic
 	SlaveChannel channel{co_await boost::asio::this_coro::executor, MAX_BUFFER_SIZE};
 
 	using namespace boost::asio::experimental::awaitable_operators;
-	const auto ok = co_await (reader(rpc, channel) && slaveWriter(rpc, channel, m_server.getThreadPool()));
+	// RPC закончится только тогда, когда reader, slaveWriter и masterWriter закончат работу
+	const auto ok = co_await (reader(rpc, channel)
+		                   && slaveWriter(rpc, channel, m_server.getThreadPool()
+				/*TODO:    && masterWriter(*/);
 
 	if (!ok)
 	{
@@ -99,6 +110,8 @@ boost::asio::awaitable<void> DetectionServiceHandler::reader(service::DetectionS
 	}
 	// Signal the slaveWriter to complete.
 	channel.close();
+	// TODO:
+	masterChannel.close();
 }
 
 // The slaveWriter will pick up reads from the reader through the channel and switch to the thread_pool to compute their
@@ -145,15 +158,34 @@ void DetectionServiceHandler::onKeepAliveTimeout(const boost::system::error_code
 		return;
 	}
 	try {
-		auto* clientContext = m_clients.find(clientUuid);
+		auto clientContext = m_clients.find(clientUuid);
 		log_info(log_cat, "no heartbeat was received from client, aborting connection!");
-		clientContext->TryCancel();
+		clientContext->context().TryCancel();
 	} catch (...) {};
 }
 
 const std::string &DetectionServiceHandler::name()
 {
 	return m_name;
+}
+
+
+boost::asio::awaitable<bool> DetectionServiceHandler::onDetectionFound(rfdetector::Detection detection)
+{
+	// switch context to the thread_pool
+	co_await boost::asio::post(boost::asio::bind_executor(m_server.getThreadPool(), boost::asio::use_awaitable));
+	log_info(log_cat, "detection received in service: {}", detection.DebugString());
+
+	auto clientsLT = m_clients.lock_table();
+	for (auto iter : clientsLT) {
+		if (!iter.second->context().IsCancelled()) {
+			log_info(log_cat, "sending detection to client = {}", iter.first);
+			/* Чтобы данные получили все клиенты, нужно записать данные в MasterChannel каждого клиента */
+		}
+	}
+
+	co_return true;
+
 }
 
 }

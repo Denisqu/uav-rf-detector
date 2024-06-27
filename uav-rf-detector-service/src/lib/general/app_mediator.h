@@ -13,7 +13,7 @@ class AppMediator
 {
 public:
 	void startApplication();
-	const std::vector<std::shared_ptr<detector::IDetector>>& getDetectors();
+	std::vector<std::shared_ptr<detector::IDetector>>& getDetectors();
 
 private:
 	std::vector<std::shared_ptr<detector::IDetector>> m_detectors;

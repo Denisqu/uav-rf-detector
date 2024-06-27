@@ -12,7 +12,7 @@ LOG_CAT(log_cat, "detector.detector_emulator")
 
 bool detector::DetectorEmulator::start()
 {
-	auto computeThread = std::thread {[this](){
+	computeThread = std::thread {[this](){
 		while (true) {
 			uint32_t i = 0;
 			std::this_thread::sleep_for(std::chrono::seconds{ 1 });
@@ -26,6 +26,7 @@ bool detector::DetectorEmulator::start()
 			++i;
 		}
 	}};
+	computeThread.detach();
 
 	return true;
 }

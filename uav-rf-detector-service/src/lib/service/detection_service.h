@@ -9,6 +9,8 @@
 #include <boost/asio/thread_pool.hpp>
 #include <boost/asio/steady_timer.hpp>
 
+#include <utility>
+
 namespace server { class AsyncGrpcServer; }
 
 namespace service
@@ -19,10 +21,10 @@ class DetectionServiceHandler :
 {
 public:
 	using RPC = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
+	using ClientDataPtr = std::shared_ptr<grpc::ServerContext*
 
 private:
-	using RequestChannel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
-	using MasterChannel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
+	using SlaveChannel = boost::asio::experimental::channel<void(boost::system::error_code, rfdetector::RequestStream)>;
 
 public:
 	DetectionServiceHandler(server::AsyncGrpcServer& server);
@@ -31,17 +33,27 @@ public:
 	const std::string& name();
 
 private:
-	boost::asio::awaitable<void> reader(service::DetectionServiceHandler::RPC& rpc, RequestChannel& channel);
-	boost::asio::awaitable<bool> slaveWriter(service::DetectionServiceHandler::RPC& rpc, RequestChannel& channel, boost::asio::thread_pool& thread_pool);
-	boost::asio::awaitable<bool> masterWriter(service::DetectionServiceHandler::RPC& rpc, MasterChannel& channel, boost::asio::thread_pool& thread_pool);
-	void onDetectionFound();
+	boost::asio::awaitable<void> reader(service::DetectionServiceHandler::RPC& rpc, SlaveChannel& channel);
+
+	/*!
+	 * @brief Отправляет ответы на реквесты, присланные пользователем
+	 */
+	boost::asio::awaitable<bool> slaveWriter(service::DetectionServiceHandler::RPC& rpc, SlaveChannel& channel, boost::asio::thread_pool& thread_pool);
+
+	/*!
+	 * @brief Отправляет потоковые данные пользователям без инициации запроса клиентом
+	 * (отправка обнаружений, потоковых данных радиоэфира и т.д)
+	 */
+	//boost::asio::awaitable<bool> masterWriter(service::DetectionServiceHandler::RPC& rpc, MasterChannel& channel, boost::asio::thread_pool& thread_pool);
+
+	boost::asio::awaitable<bool> onDetectionFound(rfdetector::Detection detection);
 
 private:
-	libcuckoo::cuckoohash_map<std::string, grpc::ServerContext*> m_clients {}; // TODO: возможно сюда нужно закинуть шаред_птр
+	libcuckoo::cuckoohash_map<std::string, std::shared_ptr<RPC>> m_clients {};
 	libcuckoo::cuckoohash_map<std::string, std::shared_ptr<boost::asio::steady_timer>> m_keepAliveTimers {};
 	server::AsyncGrpcServer& m_server;
 
-	std::string m_name = "DetectionService";
+	const std::string m_name = "DetectionService";
 };
 
 }

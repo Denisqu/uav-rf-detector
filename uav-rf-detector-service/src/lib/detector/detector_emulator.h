@@ -15,6 +15,13 @@ class DetectorEmulator : public IDetector
 public:
 	bool start() override;
 
+public:
+	/*!
+	 * @brief Оставлено как затычка - нужно будет переделать, если
+	 * лайфтайм детектора не будет совпадать с лайфтаймом сервсиа.
+	 */
+	std::thread computeThread;
+
 };
 
 }
