@@ -1,24 +1,10 @@
-# Service
+# Backend-core
 - [ ] Реализовать masterWriter. Должен отправлять данные из потока "detector", перенаправляи все обнаружения/спектр клиентам gRPC.
-- [ ] Удалять клиента из map'ы после дисконнекта.
+- [ ] Удалять клиента из DetectorService map'ы после дисконнекта.
 - [ ] Прочитать полностью overview boost.asio.
 - [ ] Написать для каждого класса brief на русском языке.
-- [ ] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [ ] Add gtest to CMake.
 - [ ] Написать несколько юнит-тестов.
-- [ ] Понять что это за код: 
-```cpp
-namespace service
-{
-
-template<auto RequestRPC>
-using AwaitableServerRPC = boost::asio::use_awaitable_t<>::as_default_on_t<agrpc::ServerRPC<RequestRPC>>;
-
-using DetectionServiceRPC = AwaitableServerRPC<&rfdetector::DetectionService::AsyncService::RequestMainStream>;
-
-}
-```
-- [ ] Отрефакторить grpc-stream
 - [ ] Разобраться в том, за что отвечает каждая строчка в реализации 
 begin-snippet: server-side-helloworld
 - [ ] MVP реализация GRPC протокола:
@@ -27,6 +13,7 @@ begin-snippet: server-side-helloworld
 - [ ] Убрать постоянные аллокации, использовать свой аллокатор.
 - [ ] Добавить поддержку async Postgres для БД обнаружений.
 - [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
+- [x] Добавить отправку Detection без запроса, через случайные интервалы времени.
 - [x] Добавить uuid metadata в клиента, на стороне сервиса вести учёт клиентов в "libcuckoo/cuckoohash_map.hh". Добавить KeepAlive разрыв.
 - [x] Логировать каждый разрыв соединения на сервере.
 - [x] Превратить логгер в async logger
@@ -35,9 +22,12 @@ begin-snippet: server-side-helloworld
 - [x] Add https://github.com/gabime/spdlog to CMake.
 - [x] Добавить сборку с помощью Conan, CMakeConan
 
+# Backend-detector
+- [ ] Реализовать MVP detector, который отправляет обнаружения для Backend-core по asio-tcp-каналу, инкапсулируя данные в Protobuf.
+
 # Client
 - [ ] Add https://github.com/gabime/spdlog to CMake.
-- [ ] Отрефакторить grpc-stream
+- [ ] Перейти от grpc-asio к grpc-async-callback.
 - [ ] MVP реализация GRPC протокола.
 - [ ] Добавить поддержку БД SQLite для журналирования событий. 
 - [ ] Убрать использование шрифта из билд директории (закинуть в CMake при сборке).

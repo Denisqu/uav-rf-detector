@@ -1,0 +1,9 @@
+{
+    "version": 4,
+    "vendor": {
+        "conan": {}
+    },
+    "include": [
+        "C:/git-repos/univ-projects/uav-rf-detector/uav-rf-detector-backend/core\\build\\generators\\CMakePresets.json"
+    ]
+}
