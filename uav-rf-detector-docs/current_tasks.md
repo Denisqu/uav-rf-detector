@@ -12,6 +12,7 @@ begin-snippet: server-side-helloworld
     - [ ] Отправка обнаружений с частотой, протоколом, датой обнаружения в виде GRPC потока.
     - [ ] Heartbeat (клиент отправляет серверу оповощение о том, что он еще жив).
 - [ ] Убрать постоянные аллокации, использовать свой аллокатор.
+- [ ] Реализовать клиента для MVP detector с помощью boost-asio-tcp.
 - [ ] Добавить поддержку async Postgres для БД обнаружений.
 - [ ] Добавить поддержку Gitlab CI (build, test, run, pack)
 - [x] Добавить отправку Detection без запроса, через случайные интервалы времени.
@@ -24,7 +25,7 @@ begin-snippet: server-side-helloworld
 - [x] Добавить сборку с помощью Conan, CMakeConan
 
 # Backend-detector
-- [ ] Реализовать MVP detector, который отправляет обнаружения для Backend-core по asio-tcp-каналу, инкапсулируя данные в Protobuf.
+- [ ] Реализовать MVP detector, который отправляет обнаружения для Backend-core по qt-tcp, инкапсулируя данные в Protobuf. Детектор должен иметь интерфейс на qt-widgets.
 
 # Client
 - [ ] Add https://github.com/gabime/spdlog to CMake.
