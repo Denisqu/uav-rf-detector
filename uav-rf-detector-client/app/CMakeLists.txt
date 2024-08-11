@@ -11,8 +11,9 @@ find_package(gRPC REQUIRED)
 find_package(absl REQUIRED)
 find_package(protobuf REQUIRED)
 find_package(asio-grpc REQUIRED)
+find_package(spdlog REQUIRED)
 
-find_package(Qt6 6.2 COMPONENTS Quick Gui REQUIRED)
+find_package(Qt6 6.2 REQUIRED COMPONENTS Quick Gui WebSockets)
 qt_standard_project_setup(REQUIRES 6.5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -23,6 +24,11 @@ set(CMAKE_AUTORCC ON)
 
 set(HEADERS
         # none
+)
+
+file(GLOB_RECURSE HEADERS
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.h
+        ${PROJECT_SOURCE_DIR}/extern/include/*.hh
 )
 
 file(GLOB_RECURSE SOURCES
@@ -64,6 +70,7 @@ target_include_directories(${USER_PROJECT_NAME}
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR} # protobuf generated files
         ${PROJECT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/lib
 )
 
 include_directories(${Boost_INCLUDE_DIRS})
@@ -77,15 +84,16 @@ target_link_libraries(${USER_PROJECT_NAME}
         gRPC::grpc++
         asio-grpc::asio-grpc
         Boost::headers
-        Qt6::Gui Qt6::Quick
+        spdlog::spdlog
+        Qt6::Gui Qt6::Quick Qt6::WebSockets
 )
 
 qt_import_qml_plugins(${USER_PROJECT_NAME})
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)
-protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
-protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
-        APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
+#protobuf_generate(TARGET ${USER_PROJECT_NAME} APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
+#protobuf_generate(TARGET ${USER_PROJECT_NAME} LANGUAGE grpc GENERATE_EXTENSIONS .grpc.pb.h .grpc.pb.cc PLUGIN "protoc-gen-grpc=${grpc_cpp_plugin_location}"
+#        APPEND_PATH ON ${PARENT_DIR}/uav-rf-detector-service/files/proto)
 
 install(TARGETS ${USER_PROJECT_NAME})
 qt_generate_deploy_qml_app_script(

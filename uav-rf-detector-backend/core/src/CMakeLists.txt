@@ -4,7 +4,6 @@ find_package(Boost REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
-find_package(asio-grpc REQUIRED)
 find_package(spdlog REQUIRED)
 
 
@@ -56,7 +55,6 @@ target_link_libraries(${USER_PROJECT_NAME}
             protobuf::libprotobuf
             gRPC::grpc
             gRPC::grpc++
-            asio-grpc::asio-grpc
             Boost::headers
             spdlog::spdlog
 )

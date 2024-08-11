@@ -1,4 +1,5 @@
 # Backend-core
+- [ ] Добавить nlohmann json в проект.
 - [ ] Переписать текущую реализацию с coro-asio-grpc на json-rpc + websocket + boost::asio.
 - [ ] Реализовать masterWriter. Должен отправлять данные из потока "detector", перенаправляи все обнаружения/спектр клиентам gRPC.
 - [ ] Удалять клиента из DetectorService map'ы после дисконнекта.
