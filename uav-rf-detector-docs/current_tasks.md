@@ -1,5 +1,5 @@
 # Backend-core
-- [ ] Переписать текущую реализацию с coro-asio-grpc на protobuf + tcp + boost::asio.
+- [ ] Переписать текущую реализацию с coro-asio-grpc на json-rpc + websocket + boost::asio.
 - [ ] Реализовать masterWriter. Должен отправлять данные из потока "detector", перенаправляи все обнаружения/спектр клиентам gRPC.
 - [ ] Удалять клиента из DetectorService map'ы после дисконнекта.
 - [ ] Прочитать полностью overview boost.asio.
