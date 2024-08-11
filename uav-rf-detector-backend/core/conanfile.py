@@ -13,6 +13,7 @@ class ClientRecipe(ConanFile):
         self.requires("grpc/1.54.3")
         self.requires("asio-grpc/2.9.2")
         self.requires("spdlog/1.14.1")
+        self.requires("nlohmann_json/3.11.3")
 
     def layout(self):
         cmake_layout(self)

@@ -5,6 +5,7 @@ find_package(absl CONFIG REQUIRED)
 find_package(protobuf CONFIG REQUIRED)
 find_package(gRPC CONFIG REQUIRED)
 find_package(spdlog REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 
 file(GLOB_RECURSE HEADERS
@@ -57,6 +58,7 @@ target_link_libraries(${USER_PROJECT_NAME}
             gRPC::grpc++
             Boost::headers
             spdlog::spdlog
+            nlohmann_json::nlohmann_json
 )
 
 get_target_property(grpc_cpp_plugin_location gRPC::grpc_cpp_plugin LOCATION)

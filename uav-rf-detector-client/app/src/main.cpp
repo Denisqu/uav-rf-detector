@@ -26,7 +26,8 @@ std::unique_ptr<QWebSocket> createTestJRPCQWebsocketClient()
 	QObject::connect(socket.get(), &QWebSocket::disconnected, socket.get(), [&socket]() {
 		log_info(log_cat,  "disconnected from: {}", socket->peerAddress().toString().toStdString());
 	});
-	QObject::connect(socket.get(), &QWebSocket::errorOccurred, socket.get(), [&socket](const QAbstractSocket::SocketError& error) {
+	QObject::connect(socket.get(), &QWebSocket::errorOccurred, socket.get(),
+					 [&socket](const QAbstractSocket::SocketError& error) {
 		log_info(log_cat, "socket error: {}", socket->errorString().toStdString());
 	});
 

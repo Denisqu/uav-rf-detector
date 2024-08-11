@@ -10,6 +10,10 @@ set(USER_PROJECT_NAME ${PROJECT_NAME})
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (MSVC)
+    add_compile_options(/bigobj)
+endif ()
+
 include(cmake/conan.cmake)
 conan_cmake_run(CONANFILE conanfile.py
         BASIC_SETUP CMAKE_TARGETS
